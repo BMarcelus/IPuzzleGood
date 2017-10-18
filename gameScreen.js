@@ -69,7 +69,7 @@ function GameScreen()
 			self.player.jump();
 		}),
 	];
-	this.addGuiElement(new GUIButton(.1,.05,.2,.1, "Restart", function(){
+	this.addGuiElement(new GUIButton(.9,.2,.2,.1, "Restart", function(){
 		// self.up=false;
 	},true,null,null,function() {
 		// self.up=true;
