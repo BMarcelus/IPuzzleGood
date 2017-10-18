@@ -143,27 +143,37 @@
 		return false;
 	}
 
+	var touchHandler={
+		handleTouches: function() {
+			// alert('b');
+		}
+	};
+
 	function handleTouchStart(e)
 	{
 		// player.jump();
 		e.preventDefault();
 		menuController.handleClickDown(e.changedTouches[0].pageX, e.changedTouches[0].pageY);
+		if(touchHandler)touchHandler.handleTouches(e.touches);
 		return false;
 	}
 	function handleTouchEnd(e)
 	{
 		e.preventDefault();
 		menuController.handleClickUp(e.changedTouches[0].pageX, e.changedTouches[0].pageY);
+		if(touchHandler)touchHandler.handleTouches(e.touches);		
 	}
 	function handleTouchMove(e)
 	{
 		menuController.handleCursorMove(e.changedTouches[0].pageX, e.changedTouches[0].pageY);
 		e.preventDefault();
+		if(touchHandler)touchHandler.handleTouches(e.touches);		
 		return false;
 	}
 	function handleTouchCancel(e)
 	{
 		e.preventDefault();
+		if(touchHandler)touchHandler.handleTouches(e.touches);		
 		menuController.handleClickUp(e.changedTouches[0].pageX, e.changedTouches[0].pageY);
 	}
 

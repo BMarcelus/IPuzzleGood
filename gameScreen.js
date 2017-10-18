@@ -1,4 +1,25 @@
 
+function TouchArea(x,y,w,h,callback) {
+	this._x=x;
+	this._y=y;
+	this._w=w;
+	this._h=h;
+	this.callback=callback;
+}
+TouchArea.prototype = {
+	contains: function(x,y) {
+		var size = 1;
+		if(CANVAS_WIDTH<CANVAS_HEIGHT)size=2;
+		this.x=this._x*size;
+		this.y=this._y*size;
+		this.w=this._w*size;
+		this.h=this._h*size;
+		if(this._x<0)this.x+=CANVAS_WIDTH;
+		if(this._y<0)this.y+=CANVAS_HEIGHT;
+		return x>=this.x &&x<=this.x+this.w && y>=this.y&&y<=this.y+this.h;
+	},
+}
+
 function timeString(v)
 {
 	var m = Math.floor(v/60);
@@ -29,37 +50,25 @@ function GameScreen()
 	this.down=false;
 	this.jump=false;
 	var self = this;
-	this.leftBtn = (new GUIButton(.1,.9,.2,.2, "<", function(){
-		self.left=false;
-	},true,null,null,function() {
-		self.left=true;
-	}));
-	this.rightBtn = (new GUIButton(.35,.9,.2,.2, ">", function(){
-		self.right=false;
-	},true,null,null,function() {
-		self.right=true;
-	}))
-	this.downBtn = (new GUIButton(.225,.9,.2,.2, "\\\/", function(){
-		self.down=false;
-	},true,null,null,function() {
-		self.down=true;
-	}))
-	this.upBtn = (new GUIButton(.225,.7,.2,.2, "^", function(){
-		self.up=false;
-	},true,null,null,function() {
-		self.up=true;
-		self.player.tryPickUp();
-	}))
-	this.addGuiElement(this.rightBtn);
-	this.addGuiElement(this.leftBtn);
-	this.addGuiElement(this.downBtn);
-	this.addGuiElement(this.upBtn);
-	this.addGuiElement(new GUIButton(.85,.9,.4,.2, "Jump", function(){
-		// self.up=false;
-	},true,null,null,function() {
-		// self.up=true;
-		self.player.jump();
-	}))
+	var btnsize = 100;
+	this.touchAreas = [
+		new TouchArea(btnsize*.1,-btnsize*1.1,btnsize,btnsize,function() {
+			self.left=true;
+		}),
+		new TouchArea(btnsize*1.2,-btnsize*1.1,btnsize,btnsize,function() {
+			self.right=true;
+		}),
+		new TouchArea(-btnsize*1.1,-btnsize*2.2,btnsize,btnsize,function() {
+			self.down=true;
+		}),
+		new TouchArea(-btnsize*2.2,-btnsize*2.2,btnsize,btnsize,function() {
+			self.up=true;
+			self.player.tryPickUp();
+		}),
+		new TouchArea(-btnsize*2.2,-btnsize*1.1,btnsize*2.2,btnsize,function() {
+			self.player.jump();
+		}),
+	];
 	this.addGuiElement(new GUIButton(.1,.05,.2,.1, "Restart", function(){
 		// self.up=false;
 	},true,null,null,function() {
@@ -88,6 +97,7 @@ GameScreen.prototype.customLoad=function(levels)
 	}
 	this.loadLevel(0);
 	keyHandler = this;
+	touchHandler = this;
 }
 
 GameScreen.prototype.onInit = function()
@@ -106,6 +116,7 @@ GameScreen.prototype.onInit = function()
 	}
 	this.loadLevel(this.level);
 	keyHandler = this;
+	touchHandler = this;
 }
 GameScreen.prototype.load=function(level, time)
 {
@@ -119,6 +130,7 @@ GameScreen.prototype.draw = function(canvas)
 {
 	this.drawGame(canvas);
 	this.drawGUI(canvas);
+	this.drawTouchAreas(canvas);
 }
 GameScreen.prototype.loadLevel = function(ind)
 {
@@ -199,7 +211,32 @@ GameScreen.prototype.drawGame = function(canvas)
 
 	canvas.restore();
 }
-
+GameScreen.prototype.drawTouchAreas = function(canvas) {
+	canvas.fillStyle="black";
+	this.touchAreas.forEach(function(t) {
+		canvas.fillRect(t.x,t.y,t.w,t.h);
+	})
+}
+GameScreen.prototype.handleTouches = function(touches) {
+	this.right = false;
+	this.left=false;
+	this.up=false;
+	this.down=false;
+	for(var i=0; i<touches.length; i++) {
+		var touch = touches[i];
+		var x = touch.pageX;
+		var y = touch.pageY;
+		this.touchAreas.forEach(function(t) {
+			if(t.contains(x,y)) {
+				t.callback();
+			}
+		})
+		// if(y<CANVAS_HEIGHT-400)continue;
+		// if(x>400)continue;
+		// if(x<200)this.left=true;
+		// if(x>200)this.right=true;
+	}
+}
 GameScreen.prototype.handleKeyUp = function(k)
 {
 }
@@ -232,8 +269,8 @@ GameScreen.prototype.handleHeldKeys = function(keys)
 {
 	var dx = 0;
 
-	if(keys[65]||keys[37]||this.leftBtn.held)dx-=1;
-	if(keys[68]||keys[39]||this.rightBtn.held)dx+=1;
+	if(keys[65]||keys[37]||this.left)dx-=1;
+	if(keys[68]||keys[39]||this.right)dx+=1;
 	this.player.setMoveX(dx);
 	this.player.setCrouch(keys[83]||keys[40]||this.down);
 	// if(keys[87]||keys[38])this.player.jump();
