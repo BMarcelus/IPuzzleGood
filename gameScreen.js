@@ -29,28 +29,28 @@ function GameScreen()
 	this.down=false;
 	this.jump=false;
 	var self = this;
-	this.addGuiElement(new GUIButton(.1,.9,.1,.1, "<", function(){
+	this.addGuiElement(new GUIButton(.1,.9,.2,.2, "<", function(){
 		self.left=false;
 	},true,null,null,function() {
 		self.left=true;
 	}))
-	this.addGuiElement(new GUIButton(.2,.9,.1,.1, ">", function(){
+	this.addGuiElement(new GUIButton(.35,.9,.2,.2, ">", function(){
 		self.right=false;
 	},true,null,null,function() {
 		self.right=true;
 	}))
-	this.addGuiElement(new GUIButton(.15,.9,.1,.1, "\\\/", function(){
+	this.addGuiElement(new GUIButton(.225,.9,.2,.2, "\\\/", function(){
 		self.down=false;
 	},true,null,null,function() {
 		self.down=true;
 	}))
-	this.addGuiElement(new GUIButton(.15,.8,.1,.1, "^", function(){
+	this.addGuiElement(new GUIButton(.225,.7,.2,.2, "^", function(){
 		self.up=false;
 	},true,null,null,function() {
 		self.up=true;
 		self.player.tryPickUp();
 	}))
-	this.addGuiElement(new GUIButton(.85,.9,.3,.1, "Jump", function(){
+	this.addGuiElement(new GUIButton(.85,.9,.4,.2, "Jump", function(){
 		// self.up=false;
 	},true,null,null,function() {
 		// self.up=true;
