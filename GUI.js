@@ -518,7 +518,7 @@ function shine(canvas, x,y,w,h, m,l)
 
 
 
-function GUIButton(x,y,w,h,title,callback,center, stretch, color)
+function GUIButton(x,y,w,h,title,callback,center, stretch, color,callback2)
 {
 	this.x=x;
 	this.y=y;
@@ -541,9 +541,11 @@ function GUIButton(x,y,w,h,title,callback,center, stretch, color)
 	this.label = new GUILabel(0,0,w*.9,h*.5,title);
 	this.label.draw = labelSizedDraw;
 	this.temp=-50;
+	this.callback2=callback2;
 	this.mouseDown = function(x,y)
 	{
 		this.held=true;
+		if(this.callback2)this.callback2(x,y);
 	}
 	this.mouseUp = function(x,y)
 	{

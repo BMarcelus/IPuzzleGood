@@ -23,6 +23,45 @@ function GameScreen()
 	this.level=0;
 	this.displayOffset = CANVAS_HEIGHT/2;
 	this.levelTitle="";//"WASD or Arrow Keys to Move";
+	this.left=false;
+	this.right=false;
+	this.up=false;
+	this.down=false;
+	this.jump=false;
+	var self = this;
+	this.addGuiElement(new GUIButton(.1,.9,.1,.1, "<", function(){
+		self.left=false;
+	},true,null,null,function() {
+		self.left=true;
+	}))
+	this.addGuiElement(new GUIButton(.2,.9,.1,.1, ">", function(){
+		self.right=false;
+	},true,null,null,function() {
+		self.right=true;
+	}))
+	this.addGuiElement(new GUIButton(.15,.9,.1,.1, "\\\/", function(){
+		self.down=false;
+	},true,null,null,function() {
+		self.down=true;
+	}))
+	this.addGuiElement(new GUIButton(.15,.8,.1,.1, "^", function(){
+		self.up=false;
+	},true,null,null,function() {
+		self.up=true;
+		self.player.tryPickUp();
+	}))
+	this.addGuiElement(new GUIButton(.85,.9,.3,.1, "Jump", function(){
+		// self.up=false;
+	},true,null,null,function() {
+		// self.up=true;
+		self.player.jump();
+	}))
+	this.addGuiElement(new GUIButton(.1,.05,.2,.1, "Restart", function(){
+		// self.up=false;
+	},true,null,null,function() {
+		// self.up=true;
+		self.game.restartLevel();
+	}))
 }
 
 GameScreen.prototype = new Screen();
@@ -189,13 +228,13 @@ GameScreen.prototype.handleHeldKeys = function(keys)
 {
 	var dx = 0;
 
-	if(keys[65]||keys[37])dx-=1;
-	if(keys[68]||keys[39])dx+=1;
+	if(keys[65]||keys[37]||this.left)dx-=1;
+	if(keys[68]||keys[39]||this.right)dx+=1;
 	this.player.setMoveX(dx);
-	this.player.setCrouch(keys[83]||keys[40]);
+	this.player.setCrouch(keys[83]||keys[40]||this.down);
 	// if(keys[87]||keys[38])this.player.jump();
 	
-	this.player.lookUp=(keys[87]||keys[38])
+	this.player.lookUp=(keys[87]||keys[38]||this.up)
 	// if(keys[83]||keys[40])this.player.moveY(1);
 }
 GameScreen.prototype.fixedUpdate = function()
