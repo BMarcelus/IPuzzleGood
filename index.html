@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<title>Puzzle Good</title>
+<!-- <meta name="viewport" content="minimal-ui"> -->
+ <style>
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0px;
+      border: 0;
+      /*background-color: #091930;*/
+      /*background-color: #adf;*/
+      background-image: url(./images/block2.png);
+      background-size: cover;
+      /*content:"minimal-ui";*/
+    }
+    a,h1, canvas {
+    	position: absolute;
+    	margin: 0;
+    }
+</style>
+<body>
+<canvas id="myCanvas"	></canvas>
+<!-- <h1>I Puzzle Good</h1> -->
+</body>
+
+<script language="javascript" src = "./newgroundsioapi/bin/newgroundsio.js"></script>
+
+<script language="javascript" src = "./apiHandler.js"></script>
+<script language="javascript" src = "./assetHandler.js"></script>
+<script language="javascript" src = "./GUI.js"></script>
+<script language="javascript" src = "./GUIPipe.js"></script>
+<script language="javascript" src = "./screen.js"></script>
+<script language="javascript" src = "./game.js"></script>
+<script language="javascript" src = "./gameScreen.js"></script>
+<script language="javascript" src = "./editorScreen.js"></script>
+<script language="javascript" src = "./menuController.js"></script>
+<script type="text/javascript">
+//Niborious
+//Brian Dizon
+	// document.getElementById("fullScreenButton").href = location.href;
+
+	var isChrome = navigator.userAgent.indexOf("Chrome") != -1;
+	var isSafari = navigator.userAgent.indexOf("Safari") != -1;
+	isSafari= isSafari&&!isChrome;
+	var soundsEnabled=true;
+	var transitionMusic=false;
+
+
+	if(isSafari)
+	{
+		alert("Sounds Lag On Safari Use Chrome To Play With Sound");
+		soundsEnabled=false;
+	}
+
+	var canvasElement = document.getElementById("myCanvas");
+	var canvas = canvasElement.getContext("2d");
+	var CANVAS_WIDTH = window.innerWidth;
+	var CANVAS_HEIGHT = window.innerHeight;
+	canvasElement.width=CANVAS_WIDTH;
+	canvasElement.height=CANVAS_HEIGHT;
+
+	document.addEventListener("keydown", handleKeyDown, false);
+	document.addEventListener("keyup", handleKeyUp, false);
+	// window.oncontextmenu = handleContextMenu;
+	window.addEventListener("resize", resize);
+	window.addEventListener("orientationchange", resize); 
+	// window.addEventListener("focusout", handleFocusOut);
+	// window.addEventListener("blur", handleFocusOut);
+
+
+
+
+	canvas.imageSmoothingEnabled = false;
+	canvas.mozImageSmoothingEnabled=false;
+	canvas.msImageSmoothingEnabled = false;
+	canvas.oImageSmoothingEnabled=false;
+	canvas.webkitImageSmoothingEnabled=false;
+
+	function resize()
+	{
+		// return;
+		CANVAS_WIDTH = Math.floor(window.innerWidth/2)*2;
+		CANVAS_HEIGHT = Math.floor(window.innerHeight/2)*2;
+		canvasElement.width=CANVAS_WIDTH;
+		canvasElement.height=CANVAS_HEIGHT;
+		canvas.imageSmoothingEnabled = false;
+		canvas.mozImageSmoothingEnabled=false;
+		canvas.msImageSmoothingEnabled = false;
+		canvas.oImageSmoothingEnabled=false;
+		canvas.webkitImageSmoothingEnabled=false;
+
+		if(menuController)
+		menuController.resize(CANVAS_WIDTH,CANVAS_HEIGHT);
+	}
+	function forceResize(w,h)
+	{
+		CANVAS_WIDTH = w;
+		CANVAS_HEIGHT = h;
+		canvasElement.width=CANVAS_WIDTH;
+		canvasElement.height=CANVAS_HEIGHT;
+		canvas.imageSmoothingEnabled = false;
+		canvas.mozImageSmoothingEnabled=false;
+		canvas.msImageSmoothingEnabled = false;
+		canvas.oImageSmoothingEnabled=false;
+		canvas.webkitImageSmoothingEnabled=false;
+
+		if(menuController)
+		menuController.resize(CANVAS_WIDTH,CANVAS_HEIGHT);
+	}
+
+
+	function saveData(level, time)
+	{
+		localStorage.setItem("level",level);
+		localStorage.setItem("time", time);
+		console.log("saved data");
+	}
+	function loadData()
+	{
+		var level=0;
+		var time=0;
+		if(localStorage.level)level=parseInt(localStorage.level);
+		if(localStorage.time)time=parseInt(localStorage.time);
+		return {level: level, time:time}
+	}
+
+
+	var menuController;
+	function start()
+	{
+		menuController = new MenuController(canvas);
+		// forceResize(800,600);
+		menuController.draw();
+		canvasElement.addEventListener("mousedown", handleMouseDown, false);
+		canvasElement.addEventListener("mouseup", handleMouseUp, false);
+		canvasElement.addEventListener("mousemove", handleMouseMove, false);
+		canvasElement.addEventListener("touchstart", handleTouchStart, false);
+		canvasElement.addEventListener("touchend", handleTouchEnd, false);
+		canvasElement.addEventListener("touchmove", handleTouchMove, false);
+	}
+
+	function handleContextMenu()
+	{
+		return false;
+	}
+
+	function handleTouchStart(e)
+	{
+		// player.jump();
+		e.preventDefault();
+		menuController.handleClickDown(e.changedTouches[0].pageX, e.changedTouches[0].pageY);
+		return false;
+	}
+	function handleTouchEnd(e)
+	{
+		e.preventDefault();
+		menuController.handleClickUp(e.changedTouches[0].pageX, e.changedTouches[0].pageY);
+	}
+	function handleTouchMove(e)
+	{
+		menuController.handleCursorMove(e.changedTouches[0].pageX, e.changedTouches[0].pageY);
+		e.preventDefault();
+		return false;
+	}
+	function handleTouchCancel(e)
+	{
+		e.preventDefault();
+		menuController.handleClickUp(e.changedTouches[0].pageX, e.changedTouches[0].pageY);
+	}
+
+	
+	function handleMouseDown(e)
+	{
+		var rect = canvasElement.getBoundingClientRect();
+		var right = (e.which&&e.which==3)||(e.button&&e.button==2);
+		if(right)e.preventDefault();
+		menuController.handleClickDown(e.clientX-rect.left,e.clientY-rect.top);
+	}
+	function handleMouseUp(e)
+	{
+		var rect = canvasElement.getBoundingClientRect();
+		var right = (e.which&&e.which==3)||(e.button&&e.button==2);
+		if(right)e.preventDefault();
+		menuController.handleClickUp(e.clientX-rect.left,e.clientY-rect.top,right);
+		//menuController.draw(canvas);
+
+	}
+	function handleMouseMove(e)
+	{
+		var rect = canvasElement.getBoundingClientRect();
+		menuController.handleCursorMove(e.clientX-rect.left, e.clientY-rect.top);
+	}
+
+	function handleFocusOut(e)
+	{
+		console.log("lost focus");
+		for(var i =0;i<255;i++)
+		{
+			keys[i]=0;
+		}
+	}
+	
+
+	function toggleFullscreen()
+	{
+		if(isSafari)
+		{
+			alert("Safari does not support full keyboard input in fullscreen mode");
+			for(var i = 0;i<255;i++)
+			{
+				keys[i]=false;
+			}
+		}
+
+		  var element = document.documentElement;
+
+		  if (element.requestFullScreen) {
+		    element.requestFullScreen();
+		  } else if (element.mozRequestFullScreen) {
+		    element.mozRequestFullScreen();
+		  } else if (element.webkitRequestFullScreen) {
+		    element.webkitRequestFullScreen();
+		  }
+	}
+	if (document.addEventListener)
+	{
+	    document.addEventListener('webkitfullscreenchange', fullScreenChangeHandler, false);
+	    document.addEventListener('mozfullscreenchange', fullScreenChangeHandler, false);
+	    document.addEventListener('fullscreenchange', fullScreenChangeHandler, false);
+	    document.addEventListener('MSFullscreenChange', fullScreenChangeHandler, false);
+	}
+
+	function fullScreenChangeHandler()
+	{
+	   for(var i =0; i<255;i++)
+	   {
+	   		keys[i]=false;
+	   }
+	}
+
+	var keyHandler;
+	
+	var keys=[255];
+
+	for(var i=0;i<255;i++)keys[i]=false;
+
+	function handleKeyDown(e)
+	{
+		var k = e.keyCode;
+		if(!keys[k])
+		{
+			// game.press(k);
+			if(keyHandler)
+			keyHandler.handleKeyDown(k);
+			keys[k]=true;
+
+			if(k==70)
+			{
+				toggleFullscreen();
+
+			}
+		}
+		if(k==32||k==40||k==37||k==38||k==39)
+		e.preventDefault();	
+		
+	}
+	function handleKeyUp(e)
+	{
+		var k = e.keyCode;
+		keys[k]=false;
+		// game.release(k);
+		if(keyHandler)
+		keyHandler.handleKeyUp(k);
+	}
+	var musicMute = false;
+	function toggleMusic()
+	{
+		musicMute=!musicMute;
+		if(musicMute)
+		{
+			bgMusic.pause();
+		}
+		else
+		{
+			bgMusic.play();
+		}
+	}
+	function toggleSound()
+	{
+		soundsEnabled=!soundsEnabled;
+	}
+
+
+	var imagesToLoad = ["guy","guy2","guy3","guy4","guy6", "block4","block","block2","block5","block6","block7","door","button","cube","cube2","switch","inverter","triangleblock","inverter2"];
+	var soundsToLoad = ["LightSwitch1.wav", "LightSwitch2.wav","Controller1.wav", "Controller2.wav", "Controller4.wav", "Controller5.wav", "Toaster1.wav", "Toaster2.wav", "DeadBolt1.wav", "DeadBolt2.wav"];
+	var bgMusic;
+	// if(soundsEnabled)
+	var songSlow = loadSound("game song 1 slow.wav", false, true);
+	var songFast = loadSound("game song 3 fast.wav", false, true);
+	var songVeryFast = loadSound("game song 2 very fast.wav", false, true);
+		bgMusic = songSlow;
+		victoryMusic = loadSound("Game Victory 1.wav",false,false);
+	IMAGES = loadImages(imagesToLoad);
+	SOUNDS = loadSounds(soundsToLoad);
+	loadComplete = function()
+	{
+		start();
+	}
+	// start();
+</script>
